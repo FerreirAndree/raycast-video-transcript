@@ -37,13 +37,15 @@
           "placeholder": "Paste a video URL",
           "required": true
         }
-      ]
+      ],
+      "icon": "caption-icon.png"
     },
     {
       "name": "transcribe-local-video",
       "title": "Transcribe Local Video",
       "description": "Transcribe a local video file with Whisper",
-      "mode": "view"
+      "mode": "view",
+      "icon": "whisper-icon.png"
     }
   ],
   "preferences": [
