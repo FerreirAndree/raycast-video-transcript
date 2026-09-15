@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { extname, join } from "node:path";
-import { parseSubtitleTranscript } from "./subtitle-parser";
+import { parseSubtitleTranscript, parseTimestampedTranscript } from "./subtitle-parser";
 
 type SubtitleFormat = { ext?: string };
 type VideoInfo = {
@@ -20,6 +20,7 @@ type SubtitleTrack = {
 export type TranscriptResult = {
   title: string;
   transcript: string;
+  timestampedTranscript: string;
   language: string;
   subtitleKind: SubtitleTrack["kind"];
 };
@@ -152,11 +153,13 @@ export async function retrieveTranscript(url: string, preferredLanguage: string)
 
     const subtitle = await readFile(join(temporaryDirectory, subtitleFile), "utf8");
     const transcript = parseSubtitleTranscript(subtitle, extname(subtitleFile).slice(1));
+    const timestampedTranscript = parseTimestampedTranscript(subtitle, extname(subtitleFile).slice(1));
     if (!transcript) throw new Error("The downloaded subtitle track did not contain readable text.");
 
     return {
       title: info.title?.trim() || "Video Transcript",
       transcript,
+      timestampedTranscript,
       language: track.language,
       subtitleKind: track.kind,
     };

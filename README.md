@@ -8,7 +8,8 @@ It works with any public URL that `yt-dlp` supports. It does not download video 
 
 1. Open Raycast and run `Video Transcript`.
 2. Paste a public video URL into the required URL field.
-3. Read the transcript and press Enter to use `Copy Transcript`.
+3. Read the clean transcript and press Enter to use `Copy Transcript`.
+4. Open Actions to show or copy a timestamped transcript, or export a Markdown file to Downloads.
 
 The extension prefers a manual caption track in your preferred language, then automatic captions in that language, then English, then another available language. Change `Preferred Subtitle Language` in Raycast Settings > Extensions > Video Transcript if needed. Use standard yt-dlp language tags, for example `en`, `es`, or `pt-BR`.
 
@@ -70,7 +71,7 @@ npm run dev
 
 ## How it works
 
-The extension asks `yt-dlp` for video metadata with `--skip-download`, selects one exposed subtitle track, and downloads only that track into a temporary directory. It asks for WebVTT first and falls back to another source-provided format. The parser supports WebVTT, SRT, and `json3`, strips subtitle markup, and collapses repeated or rolling automatic-caption cues before it renders the result.
+The extension asks `yt-dlp` for video metadata with `--skip-download`, selects one exposed subtitle track, and downloads only that track into a temporary directory. It asks for WebVTT first and falls back to another source-provided format. The parser supports WebVTT, SRT, and `json3`, strips subtitle markup, preserves cue start times, and collapses repeated or rolling automatic-caption cues before it renders the result.
 
 ## Limitations
 

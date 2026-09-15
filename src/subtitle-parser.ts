@@ -1,6 +1,9 @@
 type Json3Event = {
   segs?: Array<{ utf8?: string }>;
+  tStartMs?: number;
 };
+
+type TimedCue = { text: string; startTimeMs: number };
 
 function decodeEntities(value: string): string {
   return value
@@ -124,4 +127,62 @@ export function parseSubtitleTranscript(input: string, extension?: string): stri
     .replace(/\s+/g, " ")
     .trim();
   return paragraphize(transcript);
+}
+
+function timestampToMilliseconds(value: string): number {
+  const parts = value.replace(",", ".").split(":");
+  const seconds = Number(parts.pop());
+  const minutes = Number(parts.pop() ?? 0);
+  const hours = Number(parts.pop() ?? 0);
+  return Math.round((hours * 60 * 60 + minutes * 60 + seconds) * 1000);
+}
+
+function timedVttCues(input: string): TimedCue[] {
+  const blocks = input.replace(/^\uFEFF?WEBVTT[^\n]*\n?/i, "").split(/\n\s*\n/);
+  const cues: TimedCue[] = [];
+  for (const block of blocks) {
+    const lines = block.split("\n").map((line) => line.trim());
+    const timingLine = lines.findIndex((line) => line.includes("-->"));
+    if (timingLine === -1) continue;
+    const timing = lines[timingLine].match(/^((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})\s+-->/);
+    const text = cleanCue(lines.slice(timingLine + 1).join(" "));
+    if (timing && text) cues.push({ text, startTimeMs: timestampToMilliseconds(timing[1]) });
+  }
+  return cues;
+}
+
+function timedJson3Cues(input: string): TimedCue[] {
+  const parsed = JSON.parse(input) as { events?: Json3Event[] };
+  return (parsed.events ?? [])
+    .map((event) => ({
+      text: cleanCue((event.segs ?? []).map((segment) => segment.utf8 ?? "").join("")),
+      startTimeMs: event.tStartMs ?? 0,
+    }))
+    .filter((cue) => Boolean(cue.text));
+}
+
+export function formatTimestamp(milliseconds: number): string {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const seconds = totalSeconds % 60;
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const minutes = totalMinutes % 60;
+  const hours = Math.floor(totalMinutes / 60);
+  const twoDigits = (value: number) => value.toString().padStart(2, "0");
+  return hours > 0
+    ? `${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}`
+    : `${twoDigits(minutes)}:${twoDigits(seconds)}`;
+}
+
+/** Return the same cleaned caption text with cue start times for reference. */
+export function parseTimestampedTranscript(input: string, extension?: string): string {
+  const trimmed = input.trim();
+  const cues =
+    extension?.toLowerCase() === "json3" || trimmed.startsWith("{") ? timedJson3Cues(trimmed) : timedVttCues(trimmed);
+  const cleanCues = deduplicateCues(cues.map((cue) => cue.text));
+  return cleanCues
+    .map((text) => {
+      const source = cues.find((cue) => text.startsWith(cue.text) || cue.text.startsWith(text)) ?? cues[0];
+      return `[${formatTimestamp(source?.startTimeMs ?? 0)}] ${text}`;
+    })
+    .join("\n");
 }

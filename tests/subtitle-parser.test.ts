@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { deduplicateCues, parseSubtitleTranscript } from "../src/subtitle-parser";
+import {
+  deduplicateCues,
+  formatTimestamp,
+  parseSubtitleTranscript,
+  parseTimestampedTranscript,
+} from "../src/subtitle-parser";
 
 test("parses VTT cues and removes markup", () => {
   const vtt = `WEBVTT\n\n00:00:00.000 --> 00:00:01.000\n<c.yellow>Hello &amp; welcome.</c>\n\n00:00:01.000 --> 00:00:02.000\n<v Speaker>It is good to be here.</v>`;
@@ -10,6 +15,12 @@ test("parses VTT cues and removes markup", () => {
 test("parses SRT cues", () => {
   const srt = `1\n00:00:00,000 --> 00:00:01,000\nFirst line.\n\n2\n00:00:01,000 --> 00:00:02,000\nSecond line.`;
   assert.equal(parseSubtitleTranscript(srt, "srt"), "First line. Second line.");
+});
+
+test("adds compact timestamps to cleaned cues", () => {
+  const vtt = `WEBVTT\n\n00:01:02.000 --> 00:01:04.000\nA timed caption.`;
+  assert.equal(parseTimestampedTranscript(vtt), "[01:02] A timed caption.");
+  assert.equal(formatTimestamp(3_661_000), "01:01:01");
 });
 
 test("collapses rolling automatic captions", () => {
