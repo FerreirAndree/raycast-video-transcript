@@ -36,6 +36,23 @@ test("merges an overlapping unpunctuated cue", () => {
   ]);
 });
 
+test("removes the repeated lead-in from rolling captions after punctuation", () => {
+  assert.deepEqual(
+    deduplicateCues([
+      "However, I could say, looks like this.",
+      "However, I could say, okay, please push it to prod.",
+      "And we will see the changes in code.",
+      "And we will see the changes in just a second.",
+    ]),
+    [
+      "However, I could say, looks like this.",
+      "okay, please push it to prod.",
+      "And we will see the changes in code.",
+      "in just a second.",
+    ],
+  );
+});
+
 test("parses json3 subtitle events", () => {
   const json3 = JSON.stringify({
     events: [{ segs: [{ utf8: "Hello " }, { utf8: "world!" }] }, { segs: [{ utf8: "Again." }] }],

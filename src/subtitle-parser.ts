@@ -71,6 +71,15 @@ function overlapWordCount(previous: string, next: string): number {
   return 0;
 }
 
+function commonPrefixWordCount(previous: string, next: string): number {
+  const previousWords = words(previous);
+  const nextWords = words(next);
+  const max = Math.min(previousWords.length, nextWords.length);
+  let count = 0;
+  while (count < max && previousWords[count] === nextWords[count]) count += 1;
+  return count;
+}
+
 /** Merge rolling automatic-caption cues without discarding genuinely new speech. */
 export function deduplicateCues(cues: string[]): string[] {
   const result: string[] = [];
@@ -88,13 +97,40 @@ export function deduplicateCues(cues: string[]): string[] {
     const normalizedCue = cue.toLocaleLowerCase();
     const normalizedPrevious = previous.toLocaleLowerCase();
     if (normalizedCue === normalizedPrevious || normalizedPrevious.startsWith(normalizedCue)) continue;
-    if (normalizedCue.startsWith(normalizedPrevious) && !hasPunctuation(previous)) {
+    if (normalizedCue.startsWith(normalizedPrevious)) {
       result[result.length - 1] = cue;
       continue;
     }
 
+    const sharedStart = commonPrefixWordCount(previous, cue);
+    if (sharedStart >= 3) {
+      const cueWords = cue.split(/\s+/);
+      const sharedWord = words(cue)[sharedStart - 1];
+      const bridgeWords = new Set([
+        "a",
+        "an",
+        "the",
+        "to",
+        "of",
+        "in",
+        "on",
+        "at",
+        "for",
+        "with",
+        "from",
+        "by",
+        "and",
+        "or",
+        "but",
+      ]);
+      const tail = cueWords.slice(bridgeWords.has(sharedWord) ? sharedStart - 1 : sharedStart).join(" ");
+      if (tail) result.push(tail);
+      continue;
+    }
+
     const overlap = overlapWordCount(previous, cue);
-    if (overlap > 0 && overlap < words(cue).length && !hasPunctuation(previous)) {
+    const minimumOverlap = hasPunctuation(previous) ? 3 : 1;
+    if (overlap >= minimumOverlap && overlap < words(cue).length) {
       result[result.length - 1] = `${previous} ${cue.split(/\s+/).slice(overlap).join(" ")}`;
       continue;
     }
