@@ -56,8 +56,16 @@ function runYtDlp(args: string[]): Promise<{ stdout: string; stderr: string }> {
   });
 }
 
+function trackLanguage(language: string): string {
+  return language.toLocaleLowerCase().replace(/(?:[-_]orig(?:inal)?)$/, "");
+}
+
+function isOriginalTrack(language: string): boolean {
+  return /(?:^|[-_])orig(?:inal)?$/i.test(language);
+}
+
 function languagePriority(language: string, preferredLanguage: string): number {
-  const normalized = language.toLocaleLowerCase();
+  const normalized = trackLanguage(language);
   const preferred = preferredLanguage.toLocaleLowerCase();
   if (normalized === preferred) return 0;
   if (normalized.startsWith(`${preferred}-`) || normalized.startsWith(`${preferred}_`)) return 1;
@@ -66,7 +74,7 @@ function languagePriority(language: string, preferredLanguage: string): number {
   return 4;
 }
 
-function chooseTrack(info: VideoInfo, preferredLanguage: string): SubtitleTrack | undefined {
+export function chooseTrack(info: VideoInfo, preferredLanguage: string): SubtitleTrack | undefined {
   const tracks: SubtitleTrack[] = [
     ...Object.keys(info.subtitles ?? {}).map((language) => ({ language, kind: "manual" as const })),
     ...Object.keys(info.automatic_captions ?? {}).map((language) => ({ language, kind: "automatic" as const })),
@@ -77,6 +85,9 @@ function chooseTrack(info: VideoInfo, preferredLanguage: string): SubtitleTrack 
       languagePriority(left.language, preferredLanguage) - languagePriority(right.language, preferredLanguage);
     if (languageDifference !== 0) return languageDifference;
     if (left.kind !== right.kind) return left.kind === "manual" ? -1 : 1;
+    if (isOriginalTrack(left.language) !== isOriginalTrack(right.language)) {
+      return isOriginalTrack(left.language) ? -1 : 1;
+    }
     return left.language.localeCompare(right.language);
   })[0];
 }
