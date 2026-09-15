@@ -1,7 +1,7 @@
 {
   "name": "raycast-video-transcript",
   "title": "Video Transcript",
-  "description": "Retrieve existing captions from a video URL with yt-dlp.",
+  "description": "Retrieve captions or transcribe video locally with Whisper.",
   "icon": "icon.png",
   "author": "FerreirAndree",
   "license": "MIT",
@@ -20,7 +20,9 @@
     "transcript",
     "subtitles",
     "captions",
-    "yt-dlp"
+    "yt-dlp",
+    "whisper",
+    "local"
   ],
   "commands": [
     {
@@ -36,6 +38,12 @@
           "required": true
         }
       ]
+    },
+    {
+      "name": "transcribe-local-video",
+      "title": "Transcribe Local Video",
+      "description": "Transcribe a local video file with Whisper",
+      "mode": "view"
     }
   ],
   "preferences": [
@@ -45,6 +53,29 @@
       "title": "Preferred Subtitle Language",
       "description": "Use a language code such as en, es, or pt-BR. English is the default.",
       "default": "en",
+      "required": false
+    },
+    {
+      "name": "whisperExecutable",
+      "type": "textfield",
+      "title": "Whisper CLI Command",
+      "description": "The Whisper executable on PATH, normally whisper-cli.",
+      "default": "whisper-cli",
+      "required": false
+    },
+    {
+      "name": "whisperModelPath",
+      "type": "file",
+      "title": "Whisper Model File",
+      "description": "Choose the local whisper.cpp model file to use.",
+      "required": false
+    },
+    {
+      "name": "whisperLanguage",
+      "type": "textfield",
+      "title": "Whisper Language",
+      "description": "Use auto to detect the spoken language, or a code such as en or pt.",
+      "default": "auto",
       "required": false
     }
   ],

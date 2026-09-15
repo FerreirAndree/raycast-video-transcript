@@ -3,6 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { useEffect, useState } from "react";
+import { WhisperTranscript } from "./whisper-transcript";
 import { retrieveTranscript, TranscriptResult } from "./yt-dlp";
 
 type Preferences = { preferredLanguage?: string };
@@ -89,9 +90,25 @@ export default function VideoTranscript({ arguments: { url } }: Props) {
   }, [url, preferences.preferredLanguage]);
 
   if (error) {
+    const noCaptions = error === "No subtitles or captions are available for this video.";
     return (
       <Detail
-        markdown={`# Transcript unavailable\n\n${error}\n\nThis extension retrieves existing subtitle tracks only. It does not generate a transcript from audio.`}
+        markdown={
+          noCaptions
+            ? "# No captions available\n\nThis video has no subtitle track yt-dlp can retrieve. You can transcribe its audio with Whisper instead."
+            : `# Transcript unavailable\n\n${error}`
+        }
+        actions={
+          noCaptions ? (
+            <ActionPanel>
+              <Action.Push
+                title="Transcribe with Whisper"
+                icon={Icon.TextCursor}
+                target={<WhisperTranscript input={{ kind: "url", url: url.trim() }} />}
+              />
+            </ActionPanel>
+          ) : undefined
+        }
       />
     );
   }
@@ -110,6 +127,11 @@ export default function VideoTranscript({ arguments: { url } }: Props) {
       actions={
         <ActionPanel>
           <Action.CopyToClipboard title="Copy Transcript" content={result.transcript} icon={Icon.Clipboard} />
+          <Action.Push
+            title="Transcribe with Whisper Instead"
+            icon={Icon.TextCursor}
+            target={<WhisperTranscript input={{ kind: "url", url: url.trim() }} />}
+          />
           <Action.Push
             title="Show Transcript with Timestamps"
             icon={Icon.Clock}
