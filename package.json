@@ -1,0 +1,68 @@
+{
+  "name": "raycast-video-transcript",
+  "title": "Video Transcript",
+  "description": "Retrieve existing captions from a video URL with yt-dlp.",
+  "icon": "icon.png",
+  "author": "FerreirAndree",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.2"
+  },
+  "platforms": [
+    "Windows"
+  ],
+  "categories": [
+    "Media"
+  ],
+  "keywords": [
+    "video",
+    "transcript",
+    "subtitles",
+    "captions",
+    "yt-dlp"
+  ],
+  "commands": [
+    {
+      "name": "video-transcript",
+      "title": "Video Transcript",
+      "description": "Retrieve existing captions from a video URL",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "url",
+          "type": "text",
+          "placeholder": "Paste a video URL",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "preferences": [
+    {
+      "name": "preferredLanguage",
+      "type": "textfield",
+      "title": "Preferred Subtitle Language",
+      "description": "Use a language code such as en, es, or pt-BR. English is the default.",
+      "default": "en",
+      "required": false
+    }
+  ],
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "lint": "ray lint",
+    "test": "tsx --test tests/**/*.test.ts"
+  },
+  "dependencies": {
+    "@raycast/api": "^2.4.1"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.2.0",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.25.1",
+    "prettier": "^3.5.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}
