@@ -30,6 +30,20 @@ test("collapses rolling automatic captions", () => {
   );
 });
 
+test("ignores YouTube's near-zero-duration bridge cues", () => {
+  const vtt = `WEBVTT
+
+00:00:00.080 --> 00:00:01.750
+This is the complete guide to using
+
+00:00:01.750 --> 00:00:01.760
+This is the complete guide to using
+
+00:00:01.760 --> 00:00:04.950
+This is the complete guide to using codecs with GPT6.`;
+  assert.equal(parseSubtitleTranscript(vtt), "This is the complete guide to using codecs with GPT6.");
+});
+
 test("merges an overlapping unpunctuated cue", () => {
   assert.deepEqual(deduplicateCues(["we need to test", "to test this parser", "this parser today"]), [
     "we need to test this parser today",

@@ -37,6 +37,11 @@ function vttCues(input: string): string[] {
     const timingLine = lines.findIndex((line) => line.includes("-->"));
     if (timingLine === -1) continue;
 
+    const timing = lines[timingLine].match(
+      /^((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})\s+-->\s+((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})/,
+    );
+    if (timing && timestampToMilliseconds(timing[2]) - timestampToMilliseconds(timing[1]) < 50) continue;
+
     const text = cleanCue(lines.slice(timingLine + 1).join(" "));
     if (text) cues.push(text);
   }
@@ -181,6 +186,9 @@ function timedVttCues(input: string): TimedCue[] {
     const timingLine = lines.findIndex((line) => line.includes("-->"));
     if (timingLine === -1) continue;
     const timing = lines[timingLine].match(/^((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})\s+-->/);
+    const endTiming = lines[timingLine].match(/-->\s+((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})/);
+    if (timing && endTiming && timestampToMilliseconds(endTiming[1]) - timestampToMilliseconds(timing[1]) < 50)
+      continue;
     const text = cleanCue(lines.slice(timingLine + 1).join(" "));
     if (timing && text) cues.push({ text, startTimeMs: timestampToMilliseconds(timing[1]) });
   }
