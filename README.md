@@ -43,10 +43,10 @@ Clone the repository, install dependencies, and let the Raycast development comm
 ```powershell
 git clone git@github.com:FerreirAndree/raycast-video-transcript.git
 cd raycast-video-transcript
-.\scripts\setup.ps1 -StartDevelopmentMode
+.\scripts\setup.ps1 -RaycastHandle "your-raycast-handle" -StartDevelopmentMode
 ```
 
-Raycast validates the `author` entry in `package.json` against a Raycast profile before it starts development mode. This repository uses the GitHub owner's handle, `FerreirAndree`. If your Raycast profile uses a different handle, replace that value with your Raycast handle before running the setup command.
+Raycast validates the `author` entry in `package.json` against a Raycast profile before it starts development mode. Pass the handle from your Raycast profile URL to the setup script. It writes that value into your local manifest. This change is for your local checkout and should not be committed unless you own the repository.
 
 The script checks Node, npm, and `yt-dlp`, then runs `npm install` and `npm run dev`. While development mode starts, Raycast imports the local extension. You can then find `Video Transcript` in Raycast's root search. Press Ctrl+C once it is imported if you do not need hot reload. Raycast keeps the local extension registered. Run `npm run dev` again whenever you change the source.
 
